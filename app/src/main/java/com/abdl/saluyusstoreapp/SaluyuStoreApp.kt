@@ -2,8 +2,6 @@ package com.abdl.saluyusstoreapp
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -23,15 +21,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.abdl.saluyusstoreapp.presentation.navigation.NavigationItem
-import com.abdl.saluyusstoreapp.presentation.navigation.Screen
-import com.abdl.saluyusstoreapp.presentation.screen.item.CartItemScreen
-import com.abdl.saluyusstoreapp.presentation.screen.item.DashboardScreen
-import com.abdl.saluyusstoreapp.presentation.screen.item.DetailItemScreen
-import com.abdl.saluyusstoreapp.presentation.screen.user.GetStartedScreen
-import com.abdl.saluyusstoreapp.presentation.screen.user.LoginScreen
-import com.abdl.saluyusstoreapp.presentation.screen.user.ProfileScreen
-import com.abdl.saluyusstoreapp.presentation.screen.user.RegisterScreen
+import com.abdl.saluyusstoreapp.di.Injection
+import com.abdl.saluyusstoreapp.ui.presentation.navigation.NavigationItem
+import com.abdl.saluyusstoreapp.ui.presentation.navigation.Screen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.product.CartItemScreen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.product.DashboardScreen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.product.DetailItemScreen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.user.GetStartedScreen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.user.LoginScreen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.user.LoginViewModel
+import com.abdl.saluyusstoreapp.ui.presentation.screen.user.ProfileScreen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.user.RegisterScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +41,8 @@ fun SaluyuStoreApp(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val repository = Injection.provideRepository()
+    val viewModel = LoginViewModel(repository)
 
     Scaffold(
         bottomBar = {
@@ -58,7 +60,7 @@ fun SaluyuStoreApp(
                 GetStartedScreen(navController)
             }
             composable(Screen.Login.route) {
-                LoginScreen(navController)
+                LoginScreen(navController, viewModel)
             }
             composable(Screen.Register.route) {
                 RegisterScreen(navController)
@@ -82,8 +84,6 @@ fun SaluyuStoreApp(
             }
         }
     }
-
-
 }
 
 @Composable
