@@ -52,7 +52,7 @@ import com.abdl.saluyusstoreapp.ui.theme.TextTwo
 fun DetailItemScreen(
     count: Int,
     basePoint: Int,
-    onBackClick: () -> Unit,
+    navigateBack: () -> Unit,
     onAddCart: (count: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -145,7 +145,7 @@ fun DetailItemScreen(
                 text = "Satuan",
                 fontFamily = FontFamily(Font(R.font.lato_bold)),
                 color = com.abdl.saluyusstoreapp.ui.theme.Text,
-                modifier = Modifier.padding(4.dp, )
+                modifier = Modifier.padding(4.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row {
@@ -195,15 +195,19 @@ fun DetailItemScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(text = "Total Harga",
+                    Text(
+                        text = "Total Harga",
                         fontFamily = FontFamily(Font(R.font.lato_bold)),
                         fontSize = 12.sp,
                         color = TextTwo,
-                        modifier = Modifier.padding(4.dp))
-                    Text(text = "Rp. 50.000",
+                        modifier = Modifier.padding(4.dp)
+                    )
+                    Text(
+                        text = "Rp. 50.000",
                         fontFamily = FontFamily(Font(R.font.lato_bold)),
                         color = com.abdl.saluyusstoreapp.ui.theme.Text,
-                        modifier = Modifier.padding(4.dp))
+                        modifier = Modifier.padding(4.dp)
+                    )
                 }
                 Spacer(modifier = Modifier.weight(0.3f))
                 Button(
@@ -234,6 +238,6 @@ fun DetailItemScreen(
 @Composable
 fun PreviewDetailItem() {
     SaluyusStoreAppTheme {
-        DetailItemScreen(1, 500, onBackClick = {}, onAddCart = {})
+        DetailItemScreen(1, 500, navigateBack = {}, onAddCart = {})
     }
 }

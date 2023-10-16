@@ -29,9 +29,9 @@ import com.abdl.saluyusstoreapp.ui.presentation.screen.product.DashboardScreen
 import com.abdl.saluyusstoreapp.ui.presentation.screen.product.DetailItemScreen
 import com.abdl.saluyusstoreapp.ui.presentation.screen.user.GetStartedScreen
 import com.abdl.saluyusstoreapp.ui.presentation.screen.user.LoginScreen
-import com.abdl.saluyusstoreapp.ui.presentation.screen.user.LoginViewModel
 import com.abdl.saluyusstoreapp.ui.presentation.screen.user.ProfileScreen
 import com.abdl.saluyusstoreapp.ui.presentation.screen.user.RegisterScreen
+import com.abdl.saluyusstoreapp.ui.presentation.screen.user.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +42,7 @@ fun SaluyuStoreApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val repository = Injection.provideRepository()
-    val viewModel = LoginViewModel(repository)
+    val viewModel = UserViewModel(repository)
 
     Scaffold(
         bottomBar = {
@@ -57,30 +57,37 @@ fun SaluyuStoreApp(
             modifier = Modifier.padding(it)
         ) {
             composable(Screen.Init.route) {
-                GetStartedScreen(navController)
+                GetStartedScreen(
+                    navigateToRegister = { navController.navigate(Screen.Register.route) },
+                    navigateToLogin = { navController.navigate(Screen.Login.route) },
+                )
             }
             composable(Screen.Login.route) {
-                LoginScreen(navController, viewModel)
+                LoginScreen(
+                    navigateToRegister = { navController.navigate(Screen.Register.route) },
+                    navigateToDashboard = { navController.navigate(Screen.Dashboard.route) },
+                    viewModel = viewModel
+                )
             }
             composable(Screen.Register.route) {
-                RegisterScreen(navController)
+                RegisterScreen(navigateBack = { navController.navigate(Screen.Login.route) })
             }
-            composable(Screen.Dashboard.route){
+            composable(Screen.Dashboard.route) {
                 DashboardScreen()
             }
-            composable(Screen.DetailItem.route){
+            composable(Screen.DetailItem.route) {
                 DetailItemScreen(
                     count = 0,
                     basePoint = 1,
-                    onBackClick = { /*TODO*/ },
+                    navigateBack = { /*TODO*/ },
                     onAddCart = {}
                 )
             }
-            composable(Screen.CartItem.route){
-                CartItemScreen(onProductCountCanged = {_, _ ->}, onOrderButtonClicked = {})
+            composable(Screen.CartItem.route) {
+                CartItemScreen(onProductCountCanged = { _, _ -> }, onOrderButtonClicked = {})
             }
-            composable(Screen.ProfileAccount.route){
-                ProfileScreen(navController = navController)
+            composable(Screen.ProfileAccount.route) {
+                ProfileScreen(navigateBack = { })
             }
         }
     }

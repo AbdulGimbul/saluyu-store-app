@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,17 +17,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.abdl.saluyusstoreapp.R
 import com.abdl.saluyusstoreapp.ui.presentation.components.OutlinedRoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
-import com.abdl.saluyusstoreapp.ui.presentation.navigation.Screen
 import com.abdl.saluyusstoreapp.ui.theme.Field
 
 @Composable
-fun GetStartedScreen(navController: NavController) {
+fun GetStartedScreen(
+    navigateToLogin: () -> Unit,
+    navigateToRegister: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -59,26 +58,26 @@ fun GetStartedScreen(navController: NavController) {
                     .padding(bottom = 24.dp),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                GetStartedButton(navController)
+                GetStartedButton(navigateToLogin)
                 Spacer(modifier = Modifier.height(8.dp))
-                GetStartedSignUpButton(navController)
+                GetStartedSignUpButton(navigateToRegister)
             }
         }
     }
 }
 
 @Composable
-fun GetStartedButton(navController: NavController) {
+fun GetStartedButton(navigateToLogin: () -> Unit) {
     RoundedButton(
-        onClick = { navController.navigate(Screen.Login.route) },
+        onClick = { navigateToLogin() },
         text = "Get Started",
     )
 }
 
 @Composable
-fun GetStartedSignUpButton(navController: NavController) {
+fun GetStartedSignUpButton(navigateToRegister: () -> Unit) {
     OutlinedRoundedButton(
-        onClick = { navController.navigate(Screen.Register.route) },
+        onClick = { navigateToRegister() },
         text = "Sign Up",
     )
 }
@@ -90,5 +89,5 @@ fun GetStartedSignUpButton(navController: NavController) {
 @Composable
 fun GetStartedPreview() {
     val navController = rememberNavController()
-    GetStartedScreen(navController = navController)
+    GetStartedScreen(navigateToLogin = {}, navigateToRegister = {})
 }

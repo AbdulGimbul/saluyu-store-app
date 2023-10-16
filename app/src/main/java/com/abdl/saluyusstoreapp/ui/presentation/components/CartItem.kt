@@ -35,7 +35,9 @@ fun CartItem(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
@@ -65,13 +67,17 @@ fun CartItem(
                 fontFamily = FontFamily(Font(R.font.lato_regular))
             )
         }
-        ItemCounter(orderId = itemId, orderCount = count, onProductIncreased = {}, onProductDecreased = {})
+        ItemCounter(
+            orderId = itemId,
+            orderCount = count,
+            onProductIncreased = {},
+            onProductDecreased = {})
     }
 }
 
 @Composable
 @Preview(showBackground = true)
-fun CartItemPreview(){
+fun CartItemPreview() {
     SaluyusStoreAppTheme {
         CartItem(
             itemId = 3,
@@ -79,7 +85,7 @@ fun CartItemPreview(){
             itemName = "Sayur Bayam",
             itemPrice = 13000,
             count = 0,
-            onItemCountChanged = {itemId, count -> }
+            onItemCountChanged = { itemId, count -> }
         )
     }
 }

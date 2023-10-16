@@ -158,7 +158,7 @@ fun CartItemScreen(
                             text = "Rp. 100.000",
                             fontFamily = FontFamily(Font(R.font.lato_regular)),
                             color = com.abdl.saluyusstoreapp.ui.theme.Text
-                            )
+                        )
                     }
 
                     // Second row and divider
@@ -177,7 +177,7 @@ fun CartItemScreen(
                             text = "Rp. 10.000",
                             color = com.abdl.saluyusstoreapp.ui.theme.Text,
                             fontFamily = FontFamily(Font(R.font.lato_regular)),
-                            )
+                        )
                     }
 
                     Divider(

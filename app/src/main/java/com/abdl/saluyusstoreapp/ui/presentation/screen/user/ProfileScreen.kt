@@ -1,6 +1,5 @@
 package com.abdl.saluyusstoreapp.ui.presentation.screen.user
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -47,21 +45,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import coil.compose.rememberAsyncImagePainter
 import com.abdl.saluyusstoreapp.R
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
-import com.abdl.saluyusstoreapp.ui.presentation.navigation.Screen
 import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
-import com.abdl.saluyusstoreapp.ui.theme.Text
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,7 +63,7 @@ fun ProfileScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            modifier = Modifier.clickable { navController.navigate(Screen.Login.route) }
+                            modifier = Modifier.clickable { navigateBack() }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -93,7 +86,11 @@ fun ProfileScreen(navController: NavController) {
                 modifier = Modifier
                     .padding(18.dp)
             ) {
-                Box(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(16.dp)
+                ) {
                     Box(
                         modifier = Modifier
                             .size(150.dp)
@@ -226,7 +223,10 @@ fun ProfileAddressField() {
             )
         },
         labelText = "Address",
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
         maxLine = 3
     )
 }
@@ -245,6 +245,5 @@ fun EditButton() {
 )
 @Composable
 fun ProfileScreenPreview() {
-    val navController = rememberNavController()
-    ProfileScreen(navController)
+    ProfileScreen(navigateBack = {})
 }

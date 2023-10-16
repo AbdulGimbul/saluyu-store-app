@@ -1,5 +1,6 @@
 package com.abdl.saluyusstoreapp.ui.presentation.screen.user
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,25 +17,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Contacts
-import androidx.compose.material.icons.outlined.LocationCity
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material.icons.outlined.PhoneCallback
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -43,19 +44,50 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abdl.saluyusstoreapp.R
+import com.abdl.saluyusstoreapp.di.Injection
+import com.abdl.saluyusstoreapp.ui.presentation.common.UiState
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
-import com.abdl.saluyusstoreapp.ui.presentation.navigation.Screen
 import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
+import com.abdl.saluyusstoreapp.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(
+    viewModel: UserViewModel = viewModel(
+        factory = ViewModelFactory(Injection.provideRepository())
+    ),
+    navigateBack: () -> Unit,
+) {
+    viewModel.uiStateRegis.collectAsState(initial = UiState.Loading).value.let { uiState ->
+        when (uiState) {
+            is UiState.Loading -> {
+                CircularProgressIndicator()
+            }
+
+            is UiState.Success -> {
+                navigateBack()
+                Toast.makeText(LocalContext.current, "Registrasi berhasil!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+
+            is UiState.Error -> {
+                Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
+                    .show()
+                viewModel.resetUiState()
+            }
+        }
+    }
+
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var rePassword by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -64,7 +96,7 @@ fun RegisterScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            modifier = Modifier.clickable { navController.navigate(Screen.Login.route) }
+                            modifier = Modifier.clickable { navigateBack() }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -94,19 +126,27 @@ fun RegisterScreen(navController: NavController) {
                         .padding(top = 48.dp),
                     verticalArrangement = Arrangement.Top
                 ) {
-                    FullnameField()
+                    RegisUsernameField(
+                        regisUsername = username,
+                        onUsernameChanged = { newUsername -> username = newUsername })
                     Spacer(modifier = Modifier.height(18.dp))
-                    RegisUsernameField()
+                    RegisEmailField(
+                        regisEmail = email,
+                        onEmailChanged = { newEmail -> email = newEmail })
                     Spacer(modifier = Modifier.height(18.dp))
-                    RegisPasswordField()
+                    RegisPasswordField(
+                        regisPassword = password,
+                        onPasswordChanged = { newPass -> password = newPass })
                     Spacer(modifier = Modifier.height(18.dp))
-                    PhoneNumberField()
-                    Spacer(modifier = Modifier.height(18.dp))
-                    AddressField()
+                    RepeatPasswordField(
+                        repeatPassword = rePassword,
+                        onRepeatPasswordChanged = { newRePass -> rePassword = newRePass },
+                        password = password
+                    )
                 }
-                SignUpButton()
+                SignUpButton(viewModel, username, email, password)
                 Spacer(modifier = Modifier.height(18.dp))
-                SignInText(navController)
+                SignInText(navigateBack)
                 Spacer(modifier = Modifier.weight(0.05f))
             }
         }
@@ -114,28 +154,26 @@ fun RegisterScreen(navController: NavController) {
 }
 
 @Composable
-fun FullnameField() {
-    var fullname by remember { mutableStateOf("") }
+fun RegisEmailField(regisEmail: String, onEmailChanged: (String) -> Unit) {
     RoundedTextField(
-        value = fullname,
-        onValueChange = { fullname = it },
+        value = regisEmail,
+        onValueChange = { onEmailChanged(it) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Outlined.Contacts,
-                contentDescription = "Nama Lengkap",
+                contentDescription = "Email",
                 tint = TextTwo
             )
         },
-        labelText = "Nama Lengkap"
+        labelText = "Email"
     )
 }
 
 @Composable
-fun RegisUsernameField() {
-    var regisUsername by remember { mutableStateOf("") }
+fun RegisUsernameField(regisUsername: String, onUsernameChanged: (String) -> Unit) {
     RoundedTextField(
         value = regisUsername,
-        onValueChange = { regisUsername = it },
+        onValueChange = { onUsernameChanged(it) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Outlined.AccountCircle,
@@ -148,11 +186,10 @@ fun RegisUsernameField() {
 }
 
 @Composable
-fun RegisPasswordField() {
-    var regisPassword by remember { mutableStateOf("") }
+fun RegisPasswordField(regisPassword: String, onPasswordChanged: (String) -> Unit) {
     RoundedTextField(
         value = regisPassword,
-        onValueChange = { regisPassword = it },
+        onValueChange = { onPasswordChanged(it) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Outlined.Lock,
@@ -162,6 +199,36 @@ fun RegisPasswordField() {
         },
         labelText = "Password"
     )
+}
+
+@Composable
+fun RepeatPasswordField(
+    repeatPassword: String,
+    onRepeatPasswordChanged: (String) -> Unit,
+    password: String,
+) {
+    var passwordMatchError by remember { mutableStateOf(false) }
+
+    RoundedTextField(
+        value = repeatPassword,
+        onValueChange = {
+            onRepeatPasswordChanged(it)
+            passwordMatchError = password != it
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Outlined.Lock,
+                contentDescription = "Repeat Password",
+                tint = TextTwo
+            )
+        },
+        labelText = "Repeat Password",
+        isError = passwordMatchError,
+    )
+
+    if (passwordMatchError) {
+        Text("Passwords do not match", color = Color.Red)
+    }
 }
 
 @Composable
@@ -196,21 +263,26 @@ fun AddressField() {
             )
         },
         labelText = "Address",
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
         maxLine = 3
     )
 }
 
 @Composable
-fun SignUpButton() {
+fun SignUpButton(viewModel: UserViewModel, username: String, email: String, password: String) {
     RoundedButton(
-        onClick = { },
+        onClick = {
+            viewModel.register(username, email, password)
+        },
         text = "Sign Up",
     )
 }
 
 @Composable
-fun SignInText(navController: NavController) {
+fun SignInText(navigateBack: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -226,7 +298,7 @@ fun SignInText(navController: NavController) {
             fontFamily = FontFamily(Font(R.font.lato_regular)),
             color = Primary,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { navController.navigate(Screen.Login.route) }
+            modifier = Modifier.clickable { navigateBack() }
         )
     }
 }
@@ -237,6 +309,5 @@ fun SignInText(navController: NavController) {
 )
 @Composable
 fun RegisterPreview() {
-    val navController = rememberNavController()
-    RegisterScreen(navController)
+    RegisterScreen(navigateBack = {})
 }

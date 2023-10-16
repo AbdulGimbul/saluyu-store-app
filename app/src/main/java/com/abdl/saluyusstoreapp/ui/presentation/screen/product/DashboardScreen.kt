@@ -29,7 +29,7 @@ import com.abdl.saluyusstoreapp.ui.theme.Field
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(){
+fun DashboardScreen() {
     Scaffold(
         modifier = Modifier
             .background(color = Field)
@@ -134,6 +134,6 @@ val productItems = listOf(
     device = Devices.DEFAULT
 )
 @Composable
-fun PreviewDashboard(){
+fun PreviewDashboard() {
     DashboardScreen()
 }

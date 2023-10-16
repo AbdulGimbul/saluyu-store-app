@@ -42,14 +42,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.abdl.saluyusstoreapp.R
 import com.abdl.saluyusstoreapp.di.Injection
 import com.abdl.saluyusstoreapp.ui.presentation.common.UiState
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
-import com.abdl.saluyusstoreapp.ui.presentation.navigation.Screen
 import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
@@ -58,21 +57,25 @@ import com.abdl.saluyusstoreapp.util.ViewModelFactory
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    navController: NavController,
-    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+    viewModel: UserViewModel = viewModel(
         factory = ViewModelFactory(Injection.provideRepository())
     ),
+    navigateToDashboard: () -> Unit,
+    navigateToRegister: () -> Unit,
 ) {
-    viewModel.uiState.collectAsState(initial = UiState.Loading).value.let { uiState ->
-        when (uiState){
+    viewModel.uiStateLogin.collectAsState(initial = UiState.Loading).value.let { uiState ->
+        when (uiState) {
             is UiState.Loading -> {
                 CircularProgressIndicator()
             }
+
             is UiState.Success -> {
-                navController.navigate(Screen.Dashboard.route)
+                navigateToDashboard()
             }
+
             is UiState.Error -> {
-                Toast.makeText(LocalContext.current, "${uiState.errorMessage}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -89,7 +92,7 @@ fun LoginScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            modifier = Modifier.clickable { navController.navigate(Screen.Init.route) }
+//                            modifier = Modifier.clickable {  }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -133,7 +136,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                SignUpText(navController)
+                SignUpText(navigateToRegister)
                 Spacer(modifier = Modifier.weight(0.05f))
             }
         }
@@ -142,7 +145,6 @@ fun LoginScreen(
 
 @Composable
 fun UsernameField(username: String, onUsernameChanged: (String) -> Unit) {
-//    var username by remember { mutableStateOf("") }
 
     RoundedTextField(
         value = username,
@@ -160,7 +162,6 @@ fun UsernameField(username: String, onUsernameChanged: (String) -> Unit) {
 
 @Composable
 fun PasswordField(password: String, onPasswordChanged: (String) -> Unit) {
-//    var password by remember { mutableStateOf("") }
     var passwordVisibility by remember { mutableStateOf(false) }
 
     val visualTransformation =
@@ -208,7 +209,7 @@ fun ForgotPasswordText() {
 }
 
 @Composable
-fun SignInButton(viewModel: LoginViewModel, username: String, password: String) {
+fun SignInButton(viewModel: UserViewModel, username: String, password: String) {
     RoundedButton(
         onClick = {
             viewModel.login(username = username, password = password)
@@ -218,7 +219,7 @@ fun SignInButton(viewModel: LoginViewModel, username: String, password: String) 
 }
 
 @Composable
-fun SignUpText(navController: NavController) {
+fun SignUpText(navigateToRegister: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -234,7 +235,7 @@ fun SignUpText(navController: NavController) {
             fontFamily = FontFamily(Font(R.font.lato_regular)),
             color = Primary,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { navController.navigate(Screen.Register.route) }
+            modifier = Modifier.clickable { navigateToRegister() }
         )
     }
 }
