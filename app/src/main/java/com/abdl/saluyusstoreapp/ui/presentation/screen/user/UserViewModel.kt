@@ -16,10 +16,10 @@ class UserViewModel(
     private val repo: UserRepository,
 ) : ViewModel() {
 
-    private val _uiStateLogin = MutableStateFlow<UiState<DataUserLogin>>(UiState.Loading)
-    val uiStateLogin: StateFlow<UiState<DataUserLogin>>
+    private val _uiStateLogin = MutableStateFlow<UiState<DataUserRegis>>(UiState.Idle)
+    val uiStateLogin: StateFlow<UiState<DataUserRegis>>
         get() = _uiStateLogin
-    private val _uiStateRegis = MutableStateFlow<UiState<DataUserRegis>>(UiState.Loading)
+    private val _uiStateRegis = MutableStateFlow<UiState<DataUserRegis>>(UiState.Idle)
     val uiStateRegis: StateFlow<UiState<DataUserRegis>>
         get() = _uiStateRegis
 
@@ -72,8 +72,12 @@ class UserViewModel(
     }
 
     fun resetUiState() {
+        _uiStateRegis.value = UiState.Idle
+        _uiStateLogin.value = UiState.Idle
+    }
+
+    fun setLoading() {
         _uiStateRegis.value = UiState.Loading
-        _uiStateLogin.value = UiState.Loading
     }
 
     companion object {

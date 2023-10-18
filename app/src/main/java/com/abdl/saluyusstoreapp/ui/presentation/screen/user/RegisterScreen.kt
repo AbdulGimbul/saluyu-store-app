@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,9 +21,12 @@ import androidx.compose.material.icons.outlined.Contacts
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -41,9 +45,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abdl.saluyusstoreapp.R
 import com.abdl.saluyusstoreapp.di.Injection
@@ -52,6 +59,7 @@ import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
 import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
+import com.abdl.saluyusstoreapp.ui.theme.Secondary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
 import com.abdl.saluyusstoreapp.util.ViewModelFactory
 
@@ -63,19 +71,30 @@ fun RegisterScreen(
     ),
     navigateBack: () -> Unit,
 ) {
-    viewModel.uiStateRegis.collectAsState(initial = UiState.Loading).value.let { uiState ->
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    viewModel.uiStateRegis.collectAsState(initial = UiState.Idle).value.let { uiState ->
         when (uiState) {
+            is UiState.Idle -> {
+                isLoading = false
+            }
+
             is UiState.Loading -> {
-                CircularProgressIndicator()
+                isLoading = true
             }
 
             is UiState.Success -> {
+                isLoading = false
                 navigateBack()
                 Toast.makeText(LocalContext.current, "Registrasi berhasil!", Toast.LENGTH_SHORT)
                     .show()
+                viewModel.resetUiState()
             }
 
             is UiState.Error -> {
+                isLoading = false
                 Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
                     .show()
                 viewModel.resetUiState()
@@ -115,39 +134,52 @@ fun RegisterScreen(
                 .padding(it)
                 .background(color = Field)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(18.dp)
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(top = 48.dp),
-                    verticalArrangement = Arrangement.Top
+                        .padding(18.dp)
                 ) {
-                    RegisUsernameField(
-                        regisUsername = username,
-                        onUsernameChanged = { newUsername -> username = newUsername })
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(top = 48.dp),
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        RegisUsernameField(
+                            regisUsername = username,
+                            onUsernameChanged = { newUsername -> username = newUsername })
+                        Spacer(modifier = Modifier.height(18.dp))
+                        RegisEmailField(
+                            regisEmail = email,
+                            onEmailChanged = { newEmail -> email = newEmail })
+                        Spacer(modifier = Modifier.height(18.dp))
+                        RegisPasswordField(
+                            regisPassword = password,
+                            onPasswordChanged = { newPass -> password = newPass })
+                        Spacer(modifier = Modifier.height(18.dp))
+                        RepeatPasswordField(
+                            repeatPassword = rePassword,
+                            onRepeatPasswordChanged = { newRePass -> rePassword = newRePass },
+                            password = password
+                        )
+                    }
+                    SignUpButton(viewModel, username, email, password)
                     Spacer(modifier = Modifier.height(18.dp))
-                    RegisEmailField(
-                        regisEmail = email,
-                        onEmailChanged = { newEmail -> email = newEmail })
-                    Spacer(modifier = Modifier.height(18.dp))
-                    RegisPasswordField(
-                        regisPassword = password,
-                        onPasswordChanged = { newPass -> password = newPass })
-                    Spacer(modifier = Modifier.height(18.dp))
-                    RepeatPasswordField(
-                        repeatPassword = rePassword,
-                        onRepeatPasswordChanged = { newRePass -> rePassword = newRePass },
-                        password = password
+                    SignInText(navigateBack)
+                    Spacer(modifier = Modifier.weight(0.05f))
+                }
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Gray.copy(alpha = 0.6f))
+                    )
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Secondary
                     )
                 }
-                SignUpButton(viewModel, username, email, password)
-                Spacer(modifier = Modifier.height(18.dp))
-                SignInText(navigateBack)
-                Spacer(modifier = Modifier.weight(0.05f))
             }
         }
     }
@@ -187,6 +219,14 @@ fun RegisUsernameField(regisUsername: String, onUsernameChanged: (String) -> Uni
 
 @Composable
 fun RegisPasswordField(regisPassword: String, onPasswordChanged: (String) -> Unit) {
+    var passwordVisibility by remember { mutableStateOf(false) }
+
+    val visualTransformation =
+        if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation()
+    val toggleIcon =
+        if (passwordVisibility) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
+    val contentDescription = if (passwordVisibility) "Show Password" else "Hide password"
+
     RoundedTextField(
         value = regisPassword,
         onValueChange = { onPasswordChanged(it) },
@@ -197,7 +237,17 @@ fun RegisPasswordField(regisPassword: String, onPasswordChanged: (String) -> Uni
                 tint = TextTwo
             )
         },
-        labelText = "Password"
+        trailingIcon = {
+            IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                Icon(
+                    imageVector = toggleIcon,
+                    contentDescription = contentDescription,
+                    tint = TextTwo
+                )
+            }
+        },
+        labelText = "Password",
+        visualTransformation = visualTransformation,
     )
 }
 
@@ -208,11 +258,17 @@ fun RepeatPasswordField(
     password: String,
 ) {
     var passwordMatchError by remember { mutableStateOf(false) }
+    var passwordVisibility by remember { mutableStateOf(false) }
+
+    val visualTransformation =
+        if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation()
+    val toggleIcon =
+        if (passwordVisibility) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff
+    val contentDescription = if (passwordVisibility) "Show Password" else "Hide password"
 
     RoundedTextField(
         value = repeatPassword,
-        onValueChange = {
-            onRepeatPasswordChanged(it)
+        onValueChange = { onRepeatPasswordChanged(it)
             passwordMatchError = password != it
         },
         leadingIcon = {
@@ -222,12 +278,22 @@ fun RepeatPasswordField(
                 tint = TextTwo
             )
         },
-        labelText = "Repeat Password",
+        trailingIcon = {
+            IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                Icon(
+                    imageVector = toggleIcon,
+                    contentDescription = contentDescription,
+                    tint = TextTwo
+                )
+            }
+        },
+        labelText = "Password",
         isError = passwordMatchError,
+        visualTransformation = visualTransformation,
     )
 
     if (passwordMatchError) {
-        Text("Passwords do not match", color = Color.Red)
+        Text("Passwords do not match", color = Color.Red, fontSize = 10.sp)
     }
 }
 
@@ -275,6 +341,7 @@ fun AddressField() {
 fun SignUpButton(viewModel: UserViewModel, username: String, email: String, password: String) {
     RoundedButton(
         onClick = {
+            viewModel.setLoading()
             viewModel.register(username, email, password)
         },
         text = "Sign Up",

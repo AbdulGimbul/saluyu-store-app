@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -51,6 +53,7 @@ import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
 import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
+import com.abdl.saluyusstoreapp.ui.theme.Secondary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
 import com.abdl.saluyusstoreapp.util.ViewModelFactory
 
@@ -62,27 +65,39 @@ fun LoginScreen(
     ),
     navigateToDashboard: () -> Unit,
     navigateToRegister: () -> Unit,
+    navigateBack: () -> Unit
 ) {
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
     viewModel.uiStateLogin.collectAsState(initial = UiState.Loading).value.let { uiState ->
         when (uiState) {
+            is UiState.Idle -> {
+                isLoading = false
+            }
+
             is UiState.Loading -> {
-                CircularProgressIndicator()
+                isLoading = true
             }
 
             is UiState.Success -> {
+                isLoading = false
                 navigateToDashboard()
+                viewModel.resetUiState()
             }
 
             is UiState.Error -> {
+                isLoading = false
                 Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
                     .show()
+                viewModel.resetUiState()
             }
         }
     }
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
 
     Scaffold(
         topBar = {
@@ -92,7 +107,7 @@ fun LoginScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-//                            modifier = Modifier.clickable {  }
+                            modifier = Modifier.clickable { navigateBack() }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -111,33 +126,46 @@ fun LoginScreen(
                 .padding(it)
                 .background(color = Field)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(18.dp)
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(top = 48.dp),
-                    verticalArrangement = Arrangement.Top
+                        .padding(18.dp)
                 ) {
-                    UsernameField(username) { newUsername ->
-                        username = newUsername
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(top = 48.dp),
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        UsernameField(username) { newUsername ->
+                            username = newUsername
+                        }
+                        Spacer(modifier = Modifier.height(18.dp))
+                        PasswordField(password) { newPassword ->
+                            password = newPassword
+                        }
+                        Spacer(modifier = Modifier.height(14.dp))
+                        ForgotPasswordText()
                     }
+                    SignInButton(viewModel, username, password)
+
                     Spacer(modifier = Modifier.height(18.dp))
-                    PasswordField(password) { newPassword ->
-                        password = newPassword
-                    }
-                    Spacer(modifier = Modifier.height(14.dp))
-                    ForgotPasswordText()
+
+                    SignUpText(navigateToRegister)
+                    Spacer(modifier = Modifier.weight(0.05f))
                 }
-                SignInButton(viewModel, username, password)
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                SignUpText(navigateToRegister)
-                Spacer(modifier = Modifier.weight(0.05f))
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Gray.copy(alpha = 0.6f))
+                    )
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Secondary
+                    )
+                }
             }
         }
     }

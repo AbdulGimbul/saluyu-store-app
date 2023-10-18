@@ -66,11 +66,16 @@ fun SaluyuStoreApp(
                 LoginScreen(
                     navigateToRegister = { navController.navigate(Screen.Register.route) },
                     navigateToDashboard = { navController.navigate(Screen.Dashboard.route) },
+                    navigateBack = { navController.popBackStack() },
                     viewModel = viewModel
                 )
             }
             composable(Screen.Register.route) {
-                RegisterScreen(navigateBack = { navController.navigate(Screen.Login.route) })
+                RegisterScreen(navigateBack = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id)
+                    }
+                })
             }
             composable(Screen.Dashboard.route) {
                 DashboardScreen()

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 class UserRepository {
     private val apiService = ApiConfig.getApiService()
 
-    suspend fun login(username: String, password: String): Flow<UserLoginResponse> = flow {
+    suspend fun login(username: String, password: String): Flow<UserRegisResponse> = flow {
         val requestBody = mapOf(
             "username" to username,
             "password" to password

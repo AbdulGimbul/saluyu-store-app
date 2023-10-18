@@ -11,7 +11,7 @@ interface ApiService {
     @POST("/saluyustore-service/api/auth/login")
     suspend fun login(
         @Body body: Map<String, String>,
-    ): UserLoginResponse
+    ): UserRegisResponse
 
     @POST("/saluyustore-service/api/users")
     suspend fun register(
