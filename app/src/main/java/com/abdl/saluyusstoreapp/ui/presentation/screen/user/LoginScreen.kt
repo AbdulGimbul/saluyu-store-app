@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AccountCircle
@@ -27,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,15 +41,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.abdl.saluyusstoreapp.R
-import com.abdl.saluyusstoreapp.di.Injection
 import com.abdl.saluyusstoreapp.ui.presentation.common.UiState
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
@@ -55,23 +58,28 @@ import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
 import com.abdl.saluyusstoreapp.ui.theme.Secondary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
-import com.abdl.saluyusstoreapp.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    viewModel: UserViewModel = viewModel(
-        factory = ViewModelFactory(Injection.provideRepository())
-    ),
+    viewModel: UserViewModel = hiltViewModel(),
     navigateToDashboard: () -> Unit,
     navigateToRegister: () -> Unit,
     navigateBack: () -> Unit
 ) {
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+
+    LaunchedEffect(isLoggedIn){
+        if (isLoggedIn){
+            navigateToDashboard()
+        }
+    }
+
     var isLoading by remember {
         mutableStateOf(false)
     }
 
-    viewModel.uiStateLogin.collectAsState(initial = UiState.Loading).value.let { uiState ->
+    viewModel.uiStateLogin.collectAsState(initial = UiState.Idle).value.let { uiState ->
         when (uiState) {
             is UiState.Idle -> {
                 isLoading = false
@@ -219,6 +227,7 @@ fun PasswordField(password: String, onPasswordChanged: (String) -> Unit) {
         },
         labelText = "Password",
         visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
     )
 }
 
@@ -240,6 +249,7 @@ fun ForgotPasswordText() {
 fun SignInButton(viewModel: UserViewModel, username: String, password: String) {
     RoundedButton(
         onClick = {
+            viewModel.setLoading()
             viewModel.login(username = username, password = password)
         },
         text = "Sign in",

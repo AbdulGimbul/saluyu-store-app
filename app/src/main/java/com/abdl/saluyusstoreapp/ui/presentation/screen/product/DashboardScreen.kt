@@ -11,6 +11,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -18,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.abdl.saluyusstoreapp.R
 import com.abdl.saluyusstoreapp.ui.presentation.components.BannerSection
 import com.abdl.saluyusstoreapp.ui.presentation.components.CategorySection
@@ -25,11 +28,21 @@ import com.abdl.saluyusstoreapp.ui.presentation.components.NavigationSection
 import com.abdl.saluyusstoreapp.ui.presentation.components.ProductItem
 import com.abdl.saluyusstoreapp.ui.presentation.components.RecommendationSection
 import com.abdl.saluyusstoreapp.ui.presentation.components.ShapeItem
+import com.abdl.saluyusstoreapp.ui.presentation.screen.user.UserViewModel
 import com.abdl.saluyusstoreapp.ui.theme.Field
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(
+    viewModel: UserViewModel = hiltViewModel(),
+    navigateToLogin: () -> Unit
+) {
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+
+    if (!isLoggedIn){
+        navigateToLogin()
+    }
+
     Scaffold(
         modifier = Modifier
             .background(color = Field)
@@ -135,5 +148,5 @@ val productItems = listOf(
 )
 @Composable
 fun PreviewDashboard() {
-    DashboardScreen()
+    DashboardScreen(navigateToLogin = {})
 }

@@ -15,13 +15,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.abdl.saluyusstoreapp.di.Injection
 import com.abdl.saluyusstoreapp.ui.presentation.navigation.NavigationItem
 import com.abdl.saluyusstoreapp.ui.presentation.navigation.Screen
 import com.abdl.saluyusstoreapp.ui.presentation.screen.product.CartItemScreen
@@ -38,15 +38,14 @@ import com.abdl.saluyusstoreapp.ui.presentation.screen.user.UserViewModel
 fun SaluyuStoreApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
+    viewModel: UserViewModel = hiltViewModel(),
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val repository = Injection.provideRepository()
-    val viewModel = UserViewModel(repository)
 
     Scaffold(
         bottomBar = {
-            if (currentRoute == Screen.Dashboard.route) {
+            if (currentRoute !in listOf(Screen.Init.route, Screen.Login.route, Screen.Register.route, Screen.DetailItem.route)) {
                 BottomBar(navController)
             }
         }
@@ -78,7 +77,9 @@ fun SaluyuStoreApp(
                 })
             }
             composable(Screen.Dashboard.route) {
-                DashboardScreen()
+                DashboardScreen(
+                    navigateToLogin = { navController.navigate(Screen.Login.route) }
+                )
             }
             composable(Screen.DetailItem.route) {
                 DetailItemScreen(
@@ -92,7 +93,7 @@ fun SaluyuStoreApp(
                 CartItemScreen(onProductCountCanged = { _, _ -> }, onOrderButtonClicked = {})
             }
             composable(Screen.ProfileAccount.route) {
-                ProfileScreen(navigateBack = { })
+                ProfileScreen(navigateToLogin = { navController.navigate(Screen.Login.route) })
             }
         }
     }

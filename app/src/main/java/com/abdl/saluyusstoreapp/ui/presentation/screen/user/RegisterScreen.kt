@@ -51,9 +51,9 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abdl.saluyusstoreapp.R
-import com.abdl.saluyusstoreapp.di.Injection
 import com.abdl.saluyusstoreapp.ui.presentation.common.UiState
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
@@ -61,14 +61,11 @@ import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
 import com.abdl.saluyusstoreapp.ui.theme.Secondary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
-import com.abdl.saluyusstoreapp.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    viewModel: UserViewModel = viewModel(
-        factory = ViewModelFactory(Injection.provideRepository())
-    ),
+    viewModel: UserViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
 ) {
     var isLoading by remember {
@@ -287,9 +284,10 @@ fun RepeatPasswordField(
                 )
             }
         },
-        labelText = "Password",
+        labelText = "Repeat Password",
         isError = passwordMatchError,
         visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
     )
 
     if (passwordMatchError) {

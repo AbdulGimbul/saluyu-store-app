@@ -2,10 +2,10 @@ package com.abdl.saluyusstoreapp.data.model.response
 
 import com.google.gson.annotations.SerializedName
 
-data class UserRegisResponse(
+data class UserResponse(
 
 	@field:SerializedName("data")
-	val data: DataUserRegis? = null,
+	val data: DataUser? = null,
 
 	@field:SerializedName("message")
 	val message: String? = null,
@@ -17,7 +17,7 @@ data class UserRegisResponse(
 	val status: Int? = null
 )
 
-data class DataUserRegis(
+data class DataUser(
 
 	@field:SerializedName("address")
 	val address: String? = null,

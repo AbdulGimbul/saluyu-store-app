@@ -22,6 +22,7 @@ fun RoundedButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     text: String,
+    enabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
@@ -33,7 +34,8 @@ fun RoundedButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = Primary,
             contentColor = Color.White,
-        )
+        ),
+        enabled = enabled
     ) {
         Text(
             text = text,

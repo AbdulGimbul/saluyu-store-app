@@ -1,7 +1,9 @@
 package com.abdl.saluyusstoreapp.ui.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -15,10 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
@@ -40,15 +44,16 @@ fun RoundedTextField(
     keyboardOptions: KeyboardOptions? = null,
     maxLine: Int = 1,
     isError: Boolean = false,
+    enabled: Boolean = true
 ) {
     val passwordVisible by remember { mutableStateOf(false) }
 
     TextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .shadow(shape = RoundedCornerShape(8.dp), elevation = 2.dp),
+            .shadow(shape = RoundedCornerShape(8.dp), elevation = 2.dp).imePadding(),
         colors = TextFieldDefaults.textFieldColors(
             containerColor = Color.White,
             unfocusedIndicatorColor = Color.White
@@ -71,9 +76,10 @@ fun RoundedTextField(
         },
         visualTransformation = visualTransformation
             ?: if (passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = keyboardOptions ?: KeyboardOptions.Default,
+        keyboardOptions = keyboardOptions ?: KeyboardOptions(imeAction = ImeAction.Next),
         singleLine = maxLine == 1,
         maxLines = maxLine,
-        isError = isError
+        isError = isError,
+        enabled = enabled,
     )
 }
