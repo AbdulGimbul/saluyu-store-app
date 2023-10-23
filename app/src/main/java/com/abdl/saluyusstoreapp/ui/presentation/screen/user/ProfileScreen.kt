@@ -32,12 +32,15 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +65,7 @@ import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedTextField
 import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +73,9 @@ fun ProfileScreen(
     navigateToLogin: () -> Unit,
     viewModel: UserViewModel = hiltViewModel(),
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     var idUser by remember { mutableStateOf("") }
     var fullname by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -100,8 +107,17 @@ fun ProfileScreen(
         }
 
         is UiState.Error -> {
-            Toast.makeText(LocalContext.current, uiStateGet.errorMessage, Toast.LENGTH_SHORT).show()
+            val errorMessage = uiStateGet.errorMessage
+            LaunchedEffect(errorMessage){
+                scope.launch {
+                    snackbarHostState.showSnackbar(errorMessage)
+                }
+            }
             viewModel.resetUiState()
+
+            if (errorMessage == "JWT token already expired"){
+                viewModel.logout()
+            }
         }
     }
 
@@ -119,24 +135,36 @@ fun ProfileScreen(
             email = uiStateUpdate.data.email.toString()
             phoneNumber = uiStateUpdate.data.phoneNumber.toString()
             address = uiStateUpdate.data.address.toString()
-            Toast.makeText(LocalContext.current, "Update berhasil!", Toast.LENGTH_SHORT)
-                .show()
+            LaunchedEffect(uiStateUpdate.data) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Update berhasil!")
+                }
+            }
             viewModel.resetUiState()
             viewModel.getUser()
         }
 
         is UiState.Error -> {
-            Toast.makeText(LocalContext.current, uiStateUpdate.errorMessage, Toast.LENGTH_SHORT)
-                .show()
+            val errorMessage = uiStateUpdate.errorMessage
+            LaunchedEffect(errorMessage) {
+                scope.launch {
+                    snackbarHostState.showSnackbar(errorMessage)
+                }
+            }
             viewModel.resetUiState()
+            viewModel.getUser()
+
+            if (errorMessage == "JWT token already expired"){
+                viewModel.logout()
+            }
         }
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 viewModel.logout()
-                viewModel.resetUiState()
                 navigateToLogin()
             }) {
                 Icon(Icons.Default.Logout, contentDescription = "Logout")
@@ -422,7 +450,7 @@ fun ProfileAddressField(
         },
         labelText = "Address",
         keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
+            imeAction = ImeAction.Done,
             keyboardType = KeyboardType.Text,
         ),
         maxLine = 3,
@@ -435,7 +463,7 @@ fun EditOrSaveButton(isEditing: Boolean, isLoading: Boolean, onClick: () -> Unit
     RoundedButton(
         onClick = onClick,
         text = if (isEditing) "Save" else "Edit",
-        enabled = !isLoading
+        isVisible = !isLoading
     )
 }
 

@@ -146,6 +146,7 @@ val productItems = listOf(
     showSystemUi = true,
     device = Devices.DEFAULT
 )
+
 @Composable
 fun PreviewDashboard() {
     DashboardScreen(navigateToLogin = {})

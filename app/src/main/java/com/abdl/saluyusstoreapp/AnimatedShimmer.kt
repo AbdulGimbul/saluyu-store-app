@@ -53,7 +53,7 @@ fun AnimatedShimmer() {
 fun ShimmerGridItem(brush: Brush) {
     Spacer(
         modifier = Modifier
-            .height(48.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
             .fillMaxWidth()
             .background(brush)
@@ -61,7 +61,7 @@ fun ShimmerGridItem(brush: Brush) {
     Spacer(modifier = Modifier.height(18.dp))
     Spacer(
         modifier = Modifier
-            .height(48.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
             .fillMaxWidth()
             .background(brush)
@@ -69,7 +69,7 @@ fun ShimmerGridItem(brush: Brush) {
     Spacer(modifier = Modifier.height(18.dp))
     Spacer(
         modifier = Modifier
-            .height(48.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
             .fillMaxWidth()
             .background(brush)
@@ -77,7 +77,7 @@ fun ShimmerGridItem(brush: Brush) {
     Spacer(modifier = Modifier.height(18.dp))
     Spacer(
         modifier = Modifier
-            .height(48.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
             .fillMaxWidth()
             .background(brush)
@@ -85,7 +85,7 @@ fun ShimmerGridItem(brush: Brush) {
     Spacer(modifier = Modifier.height(18.dp))
     Spacer(
         modifier = Modifier
-            .height(48.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
             .fillMaxWidth()
             .background(brush)

@@ -22,26 +22,27 @@ fun RoundedButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     text: String,
-    enabled: Boolean = true
+    isVisible: Boolean = true
 ) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp)
-            .shadow(elevation = 8.dp, spotColor = Primary),
-        shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Primary,
-            contentColor = Color.White,
-        ),
-        enabled = enabled
-    ) {
-        Text(
-            text = text,
-            modifier = modifier.padding(vertical = 8.dp),
-            fontFamily = FontFamily(Font(resId = (R.font.lato_regular))),
-            fontWeight = FontWeight.Bold
-        )
+    if (isVisible) {
+        Button(
+            onClick = onClick,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .shadow(elevation = 8.dp, spotColor = Primary),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Primary,
+                contentColor = Color.White,
+            )
+        ) {
+            Text(
+                text = text,
+                modifier = modifier.padding(vertical = 8.dp),
+                fontFamily = FontFamily(Font(resId = (R.font.lato_regular))),
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }

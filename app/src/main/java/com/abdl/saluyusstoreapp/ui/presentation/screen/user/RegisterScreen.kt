@@ -28,13 +28,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +64,7 @@ import com.abdl.saluyusstoreapp.ui.theme.Field
 import com.abdl.saluyusstoreapp.ui.theme.Primary
 import com.abdl.saluyusstoreapp.ui.theme.Secondary
 import com.abdl.saluyusstoreapp.ui.theme.TextTwo
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +72,8 @@ fun RegisterScreen(
     viewModel: UserViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val uiState = viewModel.uiStateRegis.collectAsState().value
 
@@ -77,14 +84,20 @@ fun RegisterScreen(
 
         is UiState.Success -> {
             navigateBack()
-            Toast.makeText(LocalContext.current, "Registrasi berhasil!", Toast.LENGTH_SHORT)
-                .show()
+            LaunchedEffect(uiState.data){
+                scope.launch {
+                    snackbarHostState.showSnackbar("Registrasi berhasil!")
+                }
+            }
             viewModel.resetUiState()
         }
 
         is UiState.Error -> {
-            Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
-                .show()
+            LaunchedEffect(uiState.errorMessage){
+                scope.launch {
+                    snackbarHostState.showSnackbar(uiState.errorMessage)
+                }
+            }
             viewModel.resetUiState()
         }
     }
@@ -95,6 +108,7 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
