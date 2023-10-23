@@ -52,7 +52,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abdl.saluyusstoreapp.R
 import com.abdl.saluyusstoreapp.ui.presentation.common.UiState
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
@@ -68,34 +67,25 @@ fun RegisterScreen(
     viewModel: UserViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
 ) {
-    var isLoading by remember {
-        mutableStateOf(false)
-    }
 
-    viewModel.uiStateRegis.collectAsState(initial = UiState.Idle).value.let { uiState ->
-        when (uiState) {
-            is UiState.Idle -> {
-                isLoading = false
-            }
+    val uiState = viewModel.uiStateRegis.collectAsState().value
 
-            is UiState.Loading -> {
-                isLoading = true
-            }
+    when (uiState) {
+        is UiState.Idle -> {}
 
-            is UiState.Success -> {
-                isLoading = false
-                navigateBack()
-                Toast.makeText(LocalContext.current, "Registrasi berhasil!", Toast.LENGTH_SHORT)
-                    .show()
-                viewModel.resetUiState()
-            }
+        is UiState.Loading -> {}
 
-            is UiState.Error -> {
-                isLoading = false
-                Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
-                    .show()
-                viewModel.resetUiState()
-            }
+        is UiState.Success -> {
+            navigateBack()
+            Toast.makeText(LocalContext.current, "Registrasi berhasil!", Toast.LENGTH_SHORT)
+                .show()
+            viewModel.resetUiState()
+        }
+
+        is UiState.Error -> {
+            Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
+                .show()
+            viewModel.resetUiState()
         }
     }
 
@@ -166,7 +156,7 @@ fun RegisterScreen(
                     SignInText(navigateBack)
                     Spacer(modifier = Modifier.weight(0.05f))
                 }
-                if (isLoading) {
+                if (uiState is UiState.Loading) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -265,7 +255,8 @@ fun RepeatPasswordField(
 
     RoundedTextField(
         value = repeatPassword,
-        onValueChange = { onRepeatPasswordChanged(it)
+        onValueChange = {
+            onRepeatPasswordChanged(it)
             passwordMatchError = password != it
         },
         leadingIcon = {
@@ -339,7 +330,6 @@ fun AddressField() {
 fun SignUpButton(viewModel: UserViewModel, username: String, email: String, password: String) {
     RoundedButton(
         onClick = {
-            viewModel.setLoading()
             viewModel.register(username, email, password)
         },
         text = "Sign Up",

@@ -78,72 +78,57 @@ fun ProfileScreen(
     var address by remember { mutableStateOf("") }
     var isEditing by remember { mutableStateOf(false) }
 
-    var isLoading by remember {
-        mutableStateOf(false)
-    }
-
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(Unit) {
         viewModel.getUser()
     }
-    viewModel.uiStateGetUser.collectAsState(initial = UiState.Loading).value.let { uiState ->
-        when (uiState) {
-            is UiState.Idle -> {
-                isLoading = false
-            }
 
-            is UiState.Loading -> {
-                isLoading = true
-            }
+    val uiStateGet = viewModel.uiStateGetUser.collectAsState().value
 
-            is UiState.Success -> {
-                idUser = uiState.data.userId.toString()
-                fullname = uiState.data.fullName.toString()
-                username = uiState.data.username.toString()
-                email = uiState.data.email.toString()
-                phoneNumber = uiState.data.phoneNumber.toString()
-                address = uiState.data.address.toString()
-                isLoading = false
-                viewModel.resetUiState()
-            }
+    when (uiStateGet) {
+        is UiState.Idle -> {}
 
-            is UiState.Error -> {
-                isLoading = false
-                Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT).show()
-                viewModel.resetUiState()
-            }
+        is UiState.Loading -> {}
+
+        is UiState.Success -> {
+            idUser = uiStateGet.data.userId.toString()
+            fullname = uiStateGet.data.fullName.toString()
+            username = uiStateGet.data.username.toString()
+            email = uiStateGet.data.email.toString()
+            phoneNumber = uiStateGet.data.phoneNumber.toString()
+            address = uiStateGet.data.address.toString()
+            viewModel.resetUiState()
+        }
+
+        is UiState.Error -> {
+            Toast.makeText(LocalContext.current, uiStateGet.errorMessage, Toast.LENGTH_SHORT).show()
+            viewModel.resetUiState()
         }
     }
 
-    viewModel.uiStateUpdateUser.collectAsState().value.let { uiState ->
-        when (uiState) {
-            is UiState.Idle -> {
-                isLoading = false
-            }
+    val uiStateUpdate = viewModel.uiStateUpdateUser.collectAsState().value
 
-            is UiState.Loading -> {
-                isLoading = true
-            }
+    when (uiStateUpdate) {
+        is UiState.Idle -> {}
 
-            is UiState.Success -> {
-                idUser = uiState.data.userId.toString()
-                fullname = uiState.data.fullName.toString()
-                username = uiState.data.username.toString()
-                email = uiState.data.email.toString()
-                phoneNumber = uiState.data.phoneNumber.toString()
-                address = uiState.data.address.toString()
-                isLoading = false
-                Toast.makeText(LocalContext.current, "Update berhasil!", Toast.LENGTH_SHORT)
-                    .show()
-                viewModel.resetUiState()
-                viewModel.getUser()
-            }
+        is UiState.Loading -> {}
 
-            is UiState.Error -> {
-                isLoading = false
-                Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
-                    .show()
-                viewModel.resetUiState()
-            }
+        is UiState.Success -> {
+            idUser = uiStateUpdate.data.userId.toString()
+            fullname = uiStateUpdate.data.fullName.toString()
+            username = uiStateUpdate.data.username.toString()
+            email = uiStateUpdate.data.email.toString()
+            phoneNumber = uiStateUpdate.data.phoneNumber.toString()
+            address = uiStateUpdate.data.address.toString()
+            Toast.makeText(LocalContext.current, "Update berhasil!", Toast.LENGTH_SHORT)
+                .show()
+            viewModel.resetUiState()
+            viewModel.getUser()
+        }
+
+        is UiState.Error -> {
+            Toast.makeText(LocalContext.current, uiStateUpdate.errorMessage, Toast.LENGTH_SHORT)
+                .show()
+            viewModel.resetUiState()
         }
     }
 
@@ -209,7 +194,7 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.Top
                 ) {
                     if (isEditing) {
-                        if (isLoading) {
+                        if (uiStateGet is UiState.Loading || uiStateUpdate is UiState.Loading) {
                             AnimatedShimmer()
                         } else {
                             ProfileFullnameField(
@@ -245,7 +230,7 @@ fun ProfileScreen(
 
                         }
                     } else {
-                        if (isLoading) {
+                        if (uiStateGet is UiState.Loading || uiStateUpdate is UiState.Loading) {
                             AnimatedShimmer()
                         } else {
                             ProfileFullnameField(
@@ -272,10 +257,12 @@ fun ProfileScreen(
                         }
                     }
                 }
-                EditOrSaveButton(isEditing = isEditing, isLoading = isLoading) {
+                EditOrSaveButton(
+                    isEditing = isEditing,
+                    isLoading = uiStateGet is UiState.Loading || uiStateUpdate is UiState.Loading
+                ) {
                     if (isEditing) {
                         Log.d("ProfileScreen", "cek isEditnya ya : $isEditing")
-                        viewModel.setLoading()
                         viewModel.updateUser(
                             idUser, fullname, username, email, phoneNumber, address
                         )

@@ -3,10 +3,12 @@ package com.abdl.saluyusstoreapp.ui.presentation.screen.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abdl.saluyusstoreapp.data.model.response.DataUser
+import com.abdl.saluyusstoreapp.data.model.response.UserResponse
 import com.abdl.saluyusstoreapp.data.repository.UserRepository
 import com.abdl.saluyusstoreapp.di.LoginSession
 import com.abdl.saluyusstoreapp.ui.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,9 +42,14 @@ class UserViewModel @Inject constructor(
     private val _uiStateUpdateUser = MutableStateFlow<UiState<DataUser>>(UiState.Idle)
     val uiStateUpdateUser: StateFlow<UiState<DataUser>> = _uiStateUpdateUser
 
+    init {
+        resetUiState()
+    }
+
     fun login(username: String, password: String) {
         viewModelScope.launch {
             try {
+                _uiStateLogin.value = UiState.Loading
                 repo.login(username, password)
                     .collect { loginResponse ->
                         if (loginResponse.message == "Success") {
@@ -56,28 +63,7 @@ class UserViewModel @Inject constructor(
                         }
                     }
             } catch (e: Exception) {
-                when (e) {
-                    is HttpException -> {
-                        when (e.code()) {
-                            401 -> {
-                                // Handle HTTP 401 Unauthorized response
-                                _uiStateLogin.value = UiState.Error("Invalid username or password")
-                            }
-                            else -> {
-                                // Handle other HTTP errors
-                                _uiStateLogin.value = UiState.Error(e.message.toString())
-                            }
-                        }
-                    }
-                    is SocketTimeoutException -> {
-                        // Handle SocketTimeoutException
-                        _uiStateLogin.value = UiState.Error("Network timeout")
-                    }
-                    else -> {
-                        // Handle other errors
-                        _uiStateLogin.value = UiState.Error(e.message.toString())
-                    }
-                }
+                handleApiError(_uiStateLogin, e)
             }
         }
     }
@@ -85,6 +71,7 @@ class UserViewModel @Inject constructor(
     fun register(username: String, email: String, password: String) {
         viewModelScope.launch {
             try {
+                _uiStateRegis.value = UiState.Loading
                 repo.register(username, email, password)
                     .collect { regisResponse ->
                         if (regisResponse.message == "Success") {
@@ -92,31 +79,7 @@ class UserViewModel @Inject constructor(
                         }
                     }
             } catch (e: Exception) {
-                when (e) {
-                    is HttpException -> {
-                        when (e.code()) {
-                            400 -> {
-                                // Handle HTTP 400 Bad Request response
-                                val errorResponse = e.response()?.errorBody()?.string()
-                                val jsonObject = JSONObject(errorResponse.toString())
-                                val errorMessage = jsonObject.getString("message")
-                                _uiStateRegis.value = UiState.Error(errorMessage)
-                            }
-                            else -> {
-                                // Handle other HTTP errors
-                                _uiStateRegis.value = UiState.Error(e.message.toString())
-                            }
-                        }
-                    }
-                    is SocketTimeoutException -> {
-                        // Handle SocketTimeoutException
-                        _uiStateRegis.value = UiState.Error("Network timeout")
-                    }
-                    else -> {
-                        // Handle other errors
-                        _uiStateRegis.value = UiState.Error(e.message.toString())
-                    }
-                }
+                handleApiError(_uiStateRegis, e)
             }
         }
     }
@@ -125,6 +88,7 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             val idUser = loginSession.getUserId().first()
             try {
+                _uiStateGetUser.value = UiState.Loading
                 repo.getUser(userId = idUser)
                     .collect { userResponse ->
                         if (userResponse.message == "Success") {
@@ -132,45 +96,22 @@ class UserViewModel @Inject constructor(
                         }
                     }
             } catch (e: Exception) {
-                when (e) {
-                    is HttpException -> {
-                        when (e.code()) {
-                            400 -> {
-                                // Handle HTTP 400 Bad Request response
-                                val errorResponse = e.response()?.errorBody()?.string()
-                                val jsonObject = JSONObject(errorResponse.toString())
-                                val errorMessage = jsonObject.getString("message")
-                                _uiStateGetUser.value = UiState.Error(errorMessage)
-                            }
-                            403 -> {
-                                // Handle HTTP 403 Unauthorized response
-                                val errorResponse = e.response()?.errorBody()?.string()
-                                val jsonObject = JSONObject(errorResponse.toString())
-                                val errorMessage = jsonObject.getString("message")
-                                _uiStateGetUser.value = UiState.Error(errorMessage)
-                            }
-                            else -> {
-                                // Handle other HTTP errors
-                                _uiStateGetUser.value = UiState.Error(e.message.toString())
-                            }
-                        }
-                    }
-                    is SocketTimeoutException -> {
-                        // Handle SocketTimeoutException
-                        _uiStateGetUser.value = UiState.Error("Network timeout")
-                    }
-                    else -> {
-                        // Handle other errors
-                        _uiStateGetUser.value = UiState.Error(e.message.toString())
-                    }
-                }
+                handleApiError(_uiStateGetUser, e)
             }
         }
     }
 
-    fun updateUser(userId: String, fullname: String, username: String, email: String, phoneNumber: String, address: String) {
+    fun updateUser(
+        userId: String,
+        fullname: String,
+        username: String,
+        email: String,
+        phoneNumber: String,
+        address: String,
+    ) {
         viewModelScope.launch {
             try {
+                _uiStateUpdateUser.value = UiState.Loading
                 repo.update(userId, fullname, username, email, phoneNumber, address)
                     .collect { updateResponse ->
                         if (updateResponse.message == "Success") {
@@ -178,42 +119,7 @@ class UserViewModel @Inject constructor(
                         }
                     }
             } catch (e: Exception) {
-                when (e) {
-                    is HttpException -> {
-                        when (e.code()) {
-                            400 -> {
-                                // Handle HTTP 400 Bad Request response
-                                val errorResponse = e.response()?.errorBody()?.string()
-                                val jsonObject = JSONObject(errorResponse.toString())
-                                val errorMessage = jsonObject.getString("message")
-                                _uiStateUpdateUser.value = UiState.Error(errorMessage)
-                            }
-
-                            403 -> {
-                                // Handle HTTP 403 Unauthorized response
-                                val errorResponse = e.response()?.errorBody()?.string()
-                                val jsonObject = JSONObject(errorResponse.toString())
-                                val errorMessage = jsonObject.getString("message")
-                                _uiStateUpdateUser.value = UiState.Error(errorMessage)
-                            }
-
-                            else -> {
-                                // Handle other HTTP errors
-                                _uiStateUpdateUser.value = UiState.Error(e.message.toString())
-                            }
-                        }
-                    }
-
-                    is SocketTimeoutException -> {
-                        // Handle SocketTimeoutException
-                        _uiStateUpdateUser.value = UiState.Error("Network timeout")
-                    }
-
-                    else -> {
-                        // Handle other errors
-                        _uiStateUpdateUser.value = UiState.Error(e.message.toString())
-                    }
-                }
+                handleApiError(_uiStateUpdateUser, e)
             }
         }
     }
@@ -225,16 +131,47 @@ class UserViewModel @Inject constructor(
         _uiStateUpdateUser.value = UiState.Idle
     }
 
-    fun setLoading() {
-        _uiStateRegis.value = UiState.Loading
-        _uiStateLogin.value = UiState.Loading
-    }
-
-
     fun logout() {
         viewModelScope.launch {
             loginSession.clearData()
             repo.logout()
+        }
+    }
+
+    private fun handleApiError(uiState: MutableStateFlow<UiState<DataUser>>, e: Throwable) {
+        when (e) {
+            is HttpException -> {
+                when (e.code()) {
+                    400 -> {
+                        // Handle HTTP 400 Bad Request response
+                        val errorResponse = e.response()?.errorBody()?.string()
+                        val errorMessage = JSONObject(errorResponse.toString()).getString("message")
+                        uiState.value = UiState.Error(errorMessage)
+                    }
+                    401 -> {
+                        // Handle HTTP 401 Unauthorized response
+                        uiState.value = UiState.Error("Invalid username or password")
+                    }
+                    403 -> {
+                        // Handle HTTP 403 Unauthorized response
+                        val errorResponse = e.response()?.errorBody()?.string()
+                        val errorMessage = JSONObject(errorResponse.toString()).getString("message")
+                        uiState.value = UiState.Error(errorMessage)
+                    }
+                    else -> {
+                        // Handle other HTTP errors
+                        uiState.value = UiState.Error(e.message.toString())
+                    }
+                }
+            }
+            is SocketTimeoutException -> {
+                // Handle SocketTimeoutException
+                uiState.value = UiState.Error("Network timeout")
+            }
+            else -> {
+                // Handle other errors
+                uiState.value = UiState.Error(e.message.toString())
+            }
         }
     }
 

@@ -48,8 +48,6 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.abdl.saluyusstoreapp.R
 import com.abdl.saluyusstoreapp.ui.presentation.common.UiState
 import com.abdl.saluyusstoreapp.ui.presentation.components.RoundedButton
@@ -65,44 +63,35 @@ fun LoginScreen(
     viewModel: UserViewModel = hiltViewModel(),
     navigateToDashboard: () -> Unit,
     navigateToRegister: () -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
 ) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
 
-    LaunchedEffect(isLoggedIn){
-        if (isLoggedIn){
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
             navigateToDashboard()
         }
     }
 
-    var isLoading by remember {
-        mutableStateOf(false)
-    }
+    val uiState = viewModel.uiStateLogin.collectAsState().value
 
-    viewModel.uiStateLogin.collectAsState(initial = UiState.Idle).value.let { uiState ->
-        when (uiState) {
-            is UiState.Idle -> {
-                isLoading = false
-            }
+    when (uiState) {
+        is UiState.Idle -> {}
 
-            is UiState.Loading -> {
-                isLoading = true
-            }
+        is UiState.Loading -> {}
 
-            is UiState.Success -> {
-                isLoading = false
-                navigateToDashboard()
-                viewModel.resetUiState()
-            }
+        is UiState.Success -> {
+            navigateToDashboard()
+            viewModel.resetUiState()
+        }
 
-            is UiState.Error -> {
-                isLoading = false
-                Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
-                    .show()
-                viewModel.resetUiState()
-            }
+        is UiState.Error -> {
+            Toast.makeText(LocalContext.current, uiState.errorMessage, Toast.LENGTH_SHORT)
+                .show()
+            viewModel.resetUiState()
         }
     }
+
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -163,7 +152,7 @@ fun LoginScreen(
                     SignUpText(navigateToRegister)
                     Spacer(modifier = Modifier.weight(0.05f))
                 }
-                if (isLoading) {
+                if (uiState is UiState.Loading) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -249,7 +238,6 @@ fun ForgotPasswordText() {
 fun SignInButton(viewModel: UserViewModel, username: String, password: String) {
     RoundedButton(
         onClick = {
-            viewModel.setLoading()
             viewModel.login(username = username, password = password)
         },
         text = "Sign in",
@@ -284,6 +272,5 @@ fun SignUpText(navigateToRegister: () -> Unit) {
 )
 @Composable
 fun LoginPreview() {
-    val navController = rememberNavController()
-//    LoginScreen(navController)
+    LoginScreen(navigateToDashboard = {}, navigateBack = {}, navigateToRegister = {})
 }
