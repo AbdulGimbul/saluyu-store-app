@@ -1,7 +1,6 @@
 package com.abdl.saluyusstoreapp.ui.presentation.screen.user
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +21,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Contacts
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Phone
@@ -76,6 +76,15 @@ fun ProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) {
+            navigateToLogin()
+            viewModel.resetUiState()
+        }
+    }
+
     var idUser by remember { mutableStateOf("") }
     var fullname by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -108,14 +117,14 @@ fun ProfileScreen(
 
         is UiState.Error -> {
             val errorMessage = uiStateGet.errorMessage
-            LaunchedEffect(errorMessage){
+            LaunchedEffect(errorMessage) {
                 scope.launch {
                     snackbarHostState.showSnackbar(errorMessage)
                 }
             }
             viewModel.resetUiState()
 
-            if (errorMessage == "JWT token already expired"){
+            if (errorMessage == "JWT token already expired") {
                 viewModel.logout()
             }
         }
@@ -154,7 +163,7 @@ fun ProfileScreen(
             viewModel.resetUiState()
             viewModel.getUser()
 
-            if (errorMessage == "JWT token already expired"){
+            if (errorMessage == "JWT token already expired") {
                 viewModel.logout()
             }
         }
@@ -165,7 +174,6 @@ fun ProfileScreen(
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 viewModel.logout()
-                navigateToLogin()
             }) {
                 Icon(Icons.Default.Logout, contentDescription = "Logout")
             }
@@ -397,7 +405,7 @@ fun ProfileEmailField(
         onValueChange = { onChanged(it) },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Outlined.Contacts,
+                imageVector = Icons.Outlined.Email,
                 contentDescription = "Email",
                 tint = TextTwo
             )

@@ -45,7 +45,13 @@ fun SaluyuStoreApp(
 
     Scaffold(
         bottomBar = {
-            if (currentRoute !in listOf(Screen.Init.route, Screen.Login.route, Screen.Register.route, Screen.DetailItem.route)) {
+            if (currentRoute !in listOf(
+                    Screen.Init.route,
+                    Screen.Login.route,
+                    Screen.Register.route,
+                    Screen.DetailItem.route
+                )
+            ) {
                 BottomBar(navController)
             }
         }
@@ -72,7 +78,9 @@ fun SaluyuStoreApp(
             composable(Screen.Register.route) {
                 RegisterScreen(navigateBack = {
                     navController.navigate(Screen.Login.route) {
-                        popUpTo(navController.graph.findStartDestination().id)
+                        popUpTo(navController.graph.findStartDestination().id){
+                            inclusive = true
+                        }
                     }
                 })
             }
@@ -93,7 +101,13 @@ fun SaluyuStoreApp(
                 CartItemScreen(onProductCountCanged = { _, _ -> }, onOrderButtonClicked = {})
             }
             composable(Screen.ProfileAccount.route) {
-                ProfileScreen(navigateToLogin = { navController.navigate(Screen.Login.route) })
+                ProfileScreen(navigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id){
+                            inclusive = true
+                        }
+                    }
+                })
             }
         }
     }
